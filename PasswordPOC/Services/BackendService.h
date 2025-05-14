@@ -3,16 +3,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ServerSimulator : NSObject
+@interface BackendService : NSObject
 
 + (instancetype)sharedInstance;
 
-- (void)signUpUser:(NSString *)username
-          password:(NSString *)password
+- (void)createUser:(NSString *)userId
         completion:(void (^)(NSString * _Nullable userId,
                              NSError * _Nullable error))completion;
 
-- (void)getUserData:(NSString *)username
+- (void)getUserData:(NSString *)userId
          completion:(void (^)(NSString * _Nullable userId,
                               BOOL hasFourDigitPassword,
                               BOOL hasSixDigitPassword,
@@ -20,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setPassword:(NSString *)password
                type:(PasswordType)type
-            forUser:(NSString *)username
+            forUser:(NSString *)userId
          completion:(void (^)(BOOL success,
                               NSError * _Nullable error))completion;
 
@@ -32,4 +31,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END 

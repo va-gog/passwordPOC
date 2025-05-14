@@ -11,13 +11,17 @@
 @implementation PasswordScreenModel
 
 - (instancetype)initWithUserID:(NSString *)userID
-                            type: (PasswordType)type
-                   isPasswordSet:(BOOL)isPasswordSet {
+                          type: (PasswordType)type
+                 isPasswordSet:(BOOL)isPasswordSet
+                     titleText:(NSString *)titleText
+                   digitsCount:(NSInteger) digitsCount {
     self = [super init];
     if (self) {
         _userID = userID;
         _type = type;
         _isPasswordSet = isPasswordSet;
+        _titleText = titleText;
+        _digitsCount = digitsCount;
     }
     return self;
 }

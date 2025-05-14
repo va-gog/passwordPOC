@@ -1,29 +1,27 @@
-#import "ServerSimulator.h"
-#import "PasswordTypes.h"
+#import "BackendService.h"
 
-@interface UserData : NSObject
+@interface UserPasswordData : NSObject
 @property (nonatomic, strong) NSString *userId;
-@property (nonatomic, strong) NSString *loginPassword;
 @property (nonatomic, strong) NSString *fourDigitPassword;
 @property (nonatomic, strong) NSString *sixDigitPassword;
 @property (nonatomic, assign) BOOL hasSetFourDigitPassword;
 @property (nonatomic, assign) BOOL hasSetSixDigitPassword;
 @end
 
-@implementation UserData
+@implementation UserPasswordData
 @end
 
-@interface ServerSimulator ()
-@property (nonatomic, strong) NSMutableDictionary<NSString *, UserData *> *users;
+@interface BackendService ()
+@property (nonatomic, strong) NSMutableDictionary<NSString *, UserPasswordData *> *users;
 @end
 
-@implementation ServerSimulator
+@implementation BackendService
 
 + (instancetype)sharedInstance {
-    static ServerSimulator *instance = nil;
+    static BackendService *instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        instance = [[ServerSimulator alloc] init];
+        instance = [[BackendService alloc] init];
     });
     return instance;
 }
@@ -36,32 +34,35 @@
     return self;
 }
 
-- (void)signUpUser:(NSString *)username password:(NSString *)password completion:(void (^)(NSString * _Nullable userId, NSError * _Nullable error))completion {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (self.users[username]) {
-            NSError *error = [NSError errorWithDomain:@"ServerError" code:400 userInfo:@{NSLocalizedDescriptionKey: @"User already exists"}];
+- (void)createUser:(NSString *)userId
+        completion:(void (^)(NSString * _Nullable userId, NSError * _Nullable error))completion {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (self.users[userId]) {
+            NSError *error = [NSError errorWithDomain:@"com.passwordpoc"
+                                               code:409
+                                           userInfo:@{NSLocalizedDescriptionKey: @"User already exists"}];
             completion(nil, error);
             return;
         }
         
-        NSString *userId = [[NSUUID UUID] UUIDString];
-        
-        UserData *userData = [[UserData alloc] init];
+        UserPasswordData *userData = [[UserPasswordData alloc] init];
         userData.userId = userId;
-        userData.loginPassword = password;
         userData.hasSetFourDigitPassword = NO;
         userData.hasSetSixDigitPassword = NO;
         
-        // Store user data
         self.users[userId] = userData;
         
         completion(userId, nil);
     });
 }
 
-- (void)getUserData:(NSString *)username completion:(void (^)(NSString * _Nullable userId, BOOL hasFourDigitPassword, BOOL hasSixDigitPassword, NSError * _Nullable error))completion {
+- (void)getUserData:(NSString *)userId
+         completion:(void (^)(NSString * _Nullable userId,
+                              BOOL hasFourDigitPassword,
+                              BOOL hasSixDigitPassword,
+                              NSError * _Nullable error))completion {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UserData *userData = self.users[username];
+        UserPasswordData *userData = self.users[userId];
         
         if (!userData) {
             NSError *error = [NSError errorWithDomain:@"com.passwordpoc"
@@ -78,23 +79,24 @@
     });
 }
 
-- (void)setPassword:(NSString *)password type:(PasswordType)type forUser:(NSString *)userId completion:(void (^)(BOOL success, NSError * _Nullable error))completion {
+- (void)setPassword:(NSString *)password
+               type:(PasswordType)type
+            forUser:(NSString *)userId
+         completion:(void (^)(BOOL success, NSError * _Nullable error))completion {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        UserData *userData = self.users[userId];
+        UserPasswordData *userData = self.users[userId];
         if (!userData) {
             NSError *error = [NSError errorWithDomain:@"ServerError" code:404 userInfo:@{NSLocalizedDescriptionKey: @"User not found"}];
             completion(NO, error);
             return;
         }
         
-        // Validate password first
         [self checkPassword:password type:type forUser:userId completion:^(BOOL isValid, NSError * _Nullable error) {
             if (!isValid) {
                 completion(NO, error);
                 return;
             }
             
-            // Update user data
             if (type == PasswordTypeFourDigit) {
                 userData.fourDigitPassword = password;
                 userData.hasSetFourDigitPassword = YES;
@@ -108,8 +110,11 @@
     });
 }
 
-- (void)validatePassword:(NSString *)password type:(PasswordType)type forUser:(NSString *)userId completion:(void (^)(BOOL isValid, NSError * _Nullable error))completion {
-    UserData *userData = self.users[userId];
+- (void)validatePassword:(NSString *)password
+                    type:(PasswordType)type
+                 forUser:(NSString *)userId
+              completion:(void (^)(BOOL isValid, NSError * _Nullable error))completion {
+    UserPasswordData *userData = self.users[userId];
     if (!userData) {
         NSError *error = [NSError errorWithDomain:@"ServerError" code:404 userInfo:@{NSLocalizedDescriptionKey: @"User not found"}];
         completion(NO, error);
@@ -131,11 +136,13 @@
     completion(YES, nil);
 }
 
-
-- (void)checkPassword:(NSString *)password type:(PasswordType)type forUser:(NSString *)userId completion:(void (^)(BOOL isValid, NSError * _Nullable error))completion {
+- (void)checkPassword:(NSString *)password
+                 type:(PasswordType)type
+              forUser:(NSString *)userId
+           completion:(void (^)(BOOL isValid, NSError * _Nullable error))completion {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         // First check if user exists
-        UserData *userData = self.users[userId];
+        UserPasswordData *userData = self.users[userId];
         if (!userData) {
             NSError *error = [NSError errorWithDomain:@"ServerError" code:404 userInfo:@{NSLocalizedDescriptionKey: @"User not found"}];
             completion(NO, error);
@@ -190,4 +197,4 @@
     });
 }
 
-@end
+@end 

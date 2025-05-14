@@ -8,11 +8,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSString *userID;
 @property (nonatomic, assign, readonly) PasswordType type;
 @property (nonatomic, assign, readonly) BOOL isPasswordSet;
+@property (nonatomic, assign, readonly) NSString *titleText;
+@property (nonatomic, assign, readonly) NSInteger digitsCount;
 
 
 - (instancetype)initWithUserID:(NSString *)userID
-                            type: (PasswordType)type
-                   isPasswordSet:(BOOL)isPasswordSet;
+                          type: (PasswordType)type
+                 isPasswordSet:(BOOL)isPasswordSet
+                     titleText:(NSString *)titleText
+                   digitsCount:(NSInteger)digitsCount;
 
 @end
 
