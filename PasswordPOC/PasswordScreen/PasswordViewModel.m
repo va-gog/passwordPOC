@@ -63,6 +63,15 @@
     });
 }
 
+- (void)savePasswordToKeychain:(NSString *)password
+                    completion:(void (^)(BOOL success, NSError * _Nullable error))completion {
+    [[KeychainService sharedInstance] savePassword:password
+                                           forUser:self.screenModel.userID
+                                              type:self.screenModel.type
+                                       completion:completion];
+}
+
+
 - (void)loadPasswordFromKeychainWithCompletion:(void (^)(NSString * _Nullable password, NSError * _Nullable error))completion {
     [[KeychainService sharedInstance] loadPasswordForUser:self.screenModel.userID
                                                     type:self.screenModel.type

@@ -3,6 +3,7 @@
 #import "PasswordScreenModel.h"
 #import "AppLaunchViewModel.h"
 #import "AlertManager.h"
+#import "LocalizedStrings.h"
 
 @interface AppLaunchViewController ()
 
@@ -79,9 +80,9 @@
                 self.fourDigitButton.hidden = NO;
                 self.sixDigitButton.hidden = NO;
             } else if (error) {
-                [AlertManager showNotifyAlertWithTitle:@"Error"
+                [AlertManager showNotifyAlertWithTitle:[LocalizedStrings somethingWentWrong]
                                                message:error.localizedDescription
-                                         confirmActionTitle:@"OK"
+                                    confirmActionTitle:[LocalizedStrings ok]
                                         viewController:self];
             }
         });
@@ -106,68 +107,31 @@
             [weakSelf.loadingIndicator stopAnimating];
             
             if (error) {
-                [AlertManager showNotifyAlertWithTitle:@"Error"
+                [AlertManager showNotifyAlertWithTitle:[LocalizedStrings somethingWentWrong]
                                                message:error.localizedDescription
-                                         confirmActionTitle:@"OK"
+                                         confirmActionTitle:[LocalizedStrings ok]
                                         viewController:weakSelf];
                 return;
             }
             
             PasswordViewController *passwordVC = [[PasswordViewController alloc] init];
             passwordVC.viewModel = [[PasswordViewModel alloc] initWithScreenModel:model];
+            passwordVC.keychainEnalbled = YES;
             passwordVC.modalPresentationStyle = UIModalPresentationFormSheet;
             
             __weak PasswordViewController *weakPasswordVC = passwordVC;
             passwordVC.onPasswordValidated = ^(BOOL success,
                                                NSError * _Nullable error) {
-                if (success) {
-                    [weakPasswordVC dismissViewControllerAnimated:YES completion:nil];
-                    [AlertManager showNotificationHoodWithMessage:@"Password is valiadted"
-                                                           onView:self.view];
-                } else if (error) {
-                    [AlertManager showNotifyAlertWithTitle:@"Error"
-                                                   message:error.localizedDescription
-                                             confirmActionTitle:@"OK"
-                                            viewController:weakPasswordVC];
-                }
+                [self handlePasswordOperationResult:success
+                                          withError:error
+                                     fromController:weakPasswordVC
+                                     successMessage:[LocalizedStrings passwordValidated]];
             };
-            
-            passwordVC.onPasswordSet = ^(NSString * _Nullable password, NSError * _Nullable error) {
-                if (password) {
-                    [AlertManager showConfirmationAlertWithTitle:@"Success"
-                    message:@"Password set successfully. Would you like to save it to Keychain?"
-                    viewController:weakPasswordVC
-                    confirmActionTitle:@"Yes"
-                    confirmHandler:^{
-                        [self.viewModel savePasswordToKeychain:password
-                                                          type:type
-                                                    completion:^(BOOL success,
-                                                                 NSError * _Nullable error) {
-                            if (success) {
-                                [weakPasswordVC dismissViewControllerAnimated:YES completion:nil];
-                                [AlertManager showNotificationHoodWithMessage:@"Password is set"
-                                                                       onView:self.view];
-                            } else if (error) {
-                                [AlertManager showNotifyAlertWithTitle:@"Error"
-                                                               message:error.localizedDescription
-                                                         confirmActionTitle:@"OK"
-                                                        viewController:weakPasswordVC];
-                                [weakPasswordVC dismissViewControllerAnimated:YES completion:nil];
-                            }
-                        }];
-                    }
-                    cancelActionTitle:@"No"
-                    cancelHandler:^{
-                        [weakPasswordVC dismissViewControllerAnimated:YES completion:nil];
-                        [AlertManager showNotificationHoodWithMessage:@"Password is set"
-                                                               onView:self.view];
-                    }];
-                } else {
-                    [AlertManager showNotifyAlertWithTitle:@"Error"
-                                                   message:error.localizedDescription
-                                             confirmActionTitle:@"OK"
-                                            viewController:weakPasswordVC];
-                }
+            passwordVC.onPasswordSet = ^(BOOL success, NSError * _Nullable error) {
+                [self handlePasswordOperationResult:success
+                                          withError:error
+                                     fromController:weakPasswordVC
+                                     successMessage:[LocalizedStrings passwordSetSuccessfully]];
             };
             
             [weakSelf presentViewController:passwordVC
@@ -175,6 +139,23 @@
                                  completion:nil];
         });
     }];
+}
+
+- (void)handlePasswordOperationResult:(BOOL)success
+                         withError:(NSError * _Nullable)error
+                   fromController:(PasswordViewController *)passwordVC
+                      successMessage:(NSString *)successMessage {
+    if (success) {
+        [passwordVC dismissViewControllerAnimated:YES completion:^{
+            [AlertManager showNotificationHoodWithMessage:successMessage
+                                                   onView:self.view];
+        }];
+    } else if (error) {
+        [AlertManager showNotifyAlertWithTitle:[LocalizedStrings somethingWentWrong]
+                                       message:error.localizedDescription
+                             confirmActionTitle:[LocalizedStrings ok]
+                                viewController:passwordVC];
+    }
 }
 
 @end

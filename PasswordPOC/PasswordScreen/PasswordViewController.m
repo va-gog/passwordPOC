@@ -1,10 +1,11 @@
 #import "PasswordViewController.h"
+#import "AlertManager.h"
+#import "LocalizedStrings.h"
 
 @interface PasswordViewController () <UITextFieldDelegate>
 
 @property (nonatomic, strong) UITextField *passwordTextField;
 @property (nonatomic, strong) UILabel *titleLabel;
-@property (nonatomic, strong) UILabel *statusLabel;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicator;
 
 @end
@@ -34,15 +35,6 @@
     self.titleLabel.text = self.viewModel.screenModel.titleText;
     [self.view addSubview:self.titleLabel];
     
-    // Status Label
-    self.statusLabel = [[UILabel alloc] init];
-    self.statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.statusLabel.textAlignment = NSTextAlignmentCenter;
-    self.statusLabel.numberOfLines = 0;
-    self.statusLabel.font = [UIFont systemFontOfSize:16];
-    [self.view addSubview:self.statusLabel];
-    self.statusLabel.text = @"Please set your password";
-    
     // Password TextField
     self.passwordTextField = [[UITextField alloc] init];
     self.passwordTextField.translatesAutoresizingMaskIntoConstraints = NO;
@@ -50,7 +42,7 @@
     self.passwordTextField.secureTextEntry = YES;
     self.passwordTextField.keyboardType = UIKeyboardTypeNumberPad;
     self.passwordTextField.delegate = self;
-    self.passwordTextField.placeholder = @"Enter password";
+    self.passwordTextField.placeholder = [LocalizedStrings enterPassword];
     [self.view addSubview:self.passwordTextField];
     
     // Constraints
@@ -61,13 +53,8 @@
         [self.titleLabel.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [self.titleLabel.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:50],
         
-        [self.statusLabel.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-        [self.statusLabel.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:20],
-        [self.statusLabel.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
-        [self.statusLabel.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
-        
         [self.passwordTextField.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-        [self.passwordTextField.topAnchor constraintEqualToAnchor:self.statusLabel.bottomAnchor constant:20],
+        [self.passwordTextField.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:20],
         [self.passwordTextField.widthAnchor constraintEqualToConstant:200],
         [self.passwordTextField.heightAnchor constraintEqualToConstant:44]
     ]];
@@ -80,39 +67,35 @@
 }
 
 - (void)tryToLoadFromKeychain {
-    NSError *error = nil;
-    if ([self.viewModel canUseBiometricAuthentication:&error]) {
-        [self.viewModel authenticateWithBiometricsWithCompletion:^(BOOL success, NSError * _Nullable error) {
-            if (success) {
-                [self.viewModel loadPasswordFromKeychainWithCompletion:^(NSString * _Nullable password, NSError * _Nullable error) {
-                    if (password) {
-                        self.passwordTextField.text = password;
-                        [self validatePassword:password];
-                    } else if (error) {
-                        if (self.onPasswordValidated) {
-                            self.onPasswordValidated(NO, error);
-                        }
+    if (self.keychainEnalbled) {
+        NSError *error = nil;
+        if ([self.viewModel canUseBiometricAuthentication:&error]) {
+            // Show loading indicator before authentication
+            [self.loadingIndicator startAnimating];
+            
+            [self.viewModel authenticateWithBiometricsWithCompletion:^(BOOL success, NSError * _Nullable error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (success) {
+                        [self.viewModel loadPasswordFromKeychainWithCompletion:^(NSString * _Nullable password, NSError * _Nullable error) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.loadingIndicator stopAnimating];
+                                if (password) {
+                                    self.passwordTextField.text = password;
+                                    [self validatePassword:password];
+                                } else if (error) {
+                                    if (self.onPasswordValidated) {
+                                        self.onPasswordValidated(NO, error);
+                                    }
+                                }
+                            });
+                        }];
+                    } else {
+                        [self.loadingIndicator stopAnimating];
                     }
-                }];
-            }
-        }];
-    }
-}
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    NSString *password = [textField.text stringByReplacingCharactersInRange:range withString:string];
-    
-    if (password.length == self.viewModel.screenModel.digitsCount) {
-        [self.loadingIndicator startAnimating];
-        
-        if (!self.viewModel.screenModel.isPasswordSet) {
-            [self setPassword:password];
-        } else {
-            [self validatePassword:password];
+                });
+            }];
         }
     }
-    
-    return YES;
 }
 
 - (void)setPassword:(NSString *)password {
@@ -122,17 +105,37 @@
     [self.viewModel setPassword:password completion:^(BOOL success, NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.loadingIndicator stopAnimating];
-            
             if (success) {
-                if (weakSelf.onPasswordSet) {
-                    weakSelf.onPasswordSet(password, nil);
+                if (weakSelf.keychainEnalbled) {
+                    [AlertManager showConfirmationAlertWithTitle:[LocalizedStrings success]
+                                                         message:[LocalizedStrings saveToKeychainQuestion]
+                                                  viewController:weakSelf
+                                              confirmActionTitle:[LocalizedStrings yes]
+                                                  confirmHandler:^{
+                        [weakSelf.viewModel savePasswordToKeychain:password
+                                                        completion:^(BOOL success,
+                                                                     NSError * _Nullable error) {
+                            if (weakSelf.onPasswordSet) {
+                                weakSelf.onPasswordSet(YES, nil);
+                            }
+                        }];
+                    }
+                                               cancelActionTitle:[LocalizedStrings no]
+                                                   cancelHandler:^{
+                        if (weakSelf.onPasswordSet) {
+                            weakSelf.onPasswordSet(YES, nil);
+                        }
+                    }];
+                } else {
+                    if (weakSelf.onPasswordSet) {
+                        weakSelf.onPasswordSet(YES, nil);
+                    }
                 }
             } else {
                 if (weakSelf.onPasswordSet) {
-                    weakSelf.onPasswordSet(nil, error);
+                    weakSelf.onPasswordSet(NO, error);
                 }
             }
-               
         });
     }];
 }
@@ -155,6 +158,42 @@
             }
         });
     }];
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    // Calculate the resulting text
+    NSString *password = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    
+    // Limit input to numbers only if not backspace
+    if (![string isEqualToString:@""] && ![self isNumeric:string]) {
+        return NO;
+    }
+    
+    // Enforce digit limit
+    if (password.length > self.viewModel.screenModel.digitsCount) {
+        return NO;
+    }
+    
+    // Only trigger password check when we reach the exact length
+    if (password.length == self.viewModel.screenModel.digitsCount) {
+        // Use dispatch_async to move this work off the main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.loadingIndicator startAnimating];
+            
+            if (!self.viewModel.screenModel.isPasswordSet) {
+                [self setPassword:password];
+            } else {
+                [self validatePassword:password];
+            }
+        });
+    }
+    
+    return YES;
+}
+
+- (BOOL)isNumeric:(NSString *)string {
+    NSCharacterSet *nonDigitSet = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+    return [string rangeOfCharacterFromSet:nonDigitSet].location == NSNotFound;
 }
 
 @end 

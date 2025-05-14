@@ -18,7 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)loadPasswordFromKeychainWithCompletion:(void (^)(NSString * _Nullable password, NSError * _Nullable error))completion;
 
-
+- (void)savePasswordToKeychain:(NSString *)password
+                    completion:(void (^)(BOOL success,
+                                         NSError * _Nullable error))completion;
 
 - (void)authenticateWithBiometricsWithCompletion:(void (^)(BOOL success, NSError * _Nullable error))completion;
 

@@ -15,11 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
                               completion:(void (^)(PasswordScreenModel * _Nullable model,
                                                    NSError * _Nullable error))completion;
 
-- (void)savePasswordToKeychain:(NSString *)password
-                          type:(PasswordType)type
-                    completion:(void (^)(BOOL success,
-                                         NSError * _Nullable error))completion;
-
 @end
 
 NS_ASSUME_NONNULL_END 

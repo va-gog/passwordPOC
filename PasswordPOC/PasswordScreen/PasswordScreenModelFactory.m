@@ -1,4 +1,5 @@
 #import "PasswordScreenModelFactory.h"
+#import "LocalizedStrings.h"
 
 @implementation PasswordScreenModelFactory
 
@@ -22,12 +23,12 @@
     switch (type) {
         case PasswordTypeFourDigit:
             hasPassword = hasFourDigitPassword;
-            titleText = hasPassword ? @"Enter 4-Digit Password" : @"Set 4-Digit Password";
+            titleText = hasPassword ? [LocalizedStrings enterFourDigitPassword] : [LocalizedStrings setFourPassword];
             digitsCount = 4;
             break;
         case PasswordTypeSixDigit:
             hasPassword = hasSixDigitPassword;
-            titleText = hasPassword ? @"Enter 6-Digit Password" : @"Set 6-Digit Password";
+            titleText = hasPassword ? [LocalizedStrings enterSixDigitPassword] : [LocalizedStrings setSixPassword];
             digitsCount = 6;
             break;
         default:

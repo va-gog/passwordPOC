@@ -66,13 +66,4 @@
     });
 }
 
-- (void)savePasswordToKeychain:(NSString *)password
-                          type:(PasswordType)type
-                    completion:(void (^)(BOOL success, NSError * _Nullable error))completion {
-    [[KeychainService sharedInstance] savePassword:password
-                                           forUser:self.userId
-                                             type:type
-                                       completion:completion];
-}
-
 @end 
