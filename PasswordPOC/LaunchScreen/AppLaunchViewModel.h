@@ -1,12 +1,16 @@
 #import <Foundation/Foundation.h>
 #import "PasswordTypes.h"
 #import "PasswordScreenModel.h"
+#import "BackendService.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppLaunchViewModel : NSObject
 
 @property (nonatomic, strong, readonly) NSString *userId;
+@property (nonatomic, strong, readonly) id<BackendServiceProtocol> backendService;
+
+- (instancetype)initWithBackendService:(id<BackendServiceProtocol>)backendService;
 
 - (void)initializeUserWithCompletion:(void (^)(BOOL success,
                                                NSError * _Nullable error))completion;

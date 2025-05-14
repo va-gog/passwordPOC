@@ -17,15 +17,6 @@
 
 @implementation BackendService
 
-+ (instancetype)sharedInstance {
-    static BackendService *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[BackendService alloc] init];
-    });
-    return instance;
-}
-
 - (instancetype)init {
     self = [super init];
     if (self) {

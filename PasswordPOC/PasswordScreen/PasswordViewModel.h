@@ -1,6 +1,9 @@
 #import <Foundation/Foundation.h>
 #import "PasswordTypes.h"
 #import "PasswordScreenModel.h"
+#import "BackendService.h"
+#import "KeychainService.h"
+#import "BiometricService.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -8,7 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) PasswordScreenModel *screenModel;
 
-- (instancetype)initWithScreenModel:(PasswordScreenModel *)screenModel;
+- (instancetype)initWithScreenModel:(PasswordScreenModel *)screenModel
+                     backendService:(id<BackendServiceProtocol>)backendService
+                    keychainService:(id<KeychainServiceProtocol>)keychainService
+                   biometricService:(id<BiometricServiceProtocol>)biometricService;
 
 - (void)setPassword:(NSString *)password
          completion:(void (^)(BOOL success, NSError * _Nullable error))completion;

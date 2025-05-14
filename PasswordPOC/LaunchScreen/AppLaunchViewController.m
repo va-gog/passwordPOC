@@ -65,7 +65,7 @@
 }
 
 - (void)setupViewModel {
-    self.viewModel = [[AppLaunchViewModel alloc] init];
+    self.viewModel = [[AppLaunchViewModel alloc] initWithBackendService:[[BackendService alloc] init]];
     [self initializeUser];
 }
 
@@ -115,7 +115,10 @@
             }
             
             PasswordViewController *passwordVC = [[PasswordViewController alloc] init];
-            passwordVC.viewModel = [[PasswordViewModel alloc] initWithScreenModel:model];
+            passwordVC.viewModel = [[PasswordViewModel alloc] initWithScreenModel:model
+                                                                   backendService: self.viewModel.backendService
+                                                                  keychainService:[[KeychainService alloc] init]
+                                                                 biometricService:[[BiometricService alloc] init]];
             passwordVC.keychainEnalbled = YES;
             passwordVC.modalPresentationStyle = UIModalPresentationFormSheet;
             

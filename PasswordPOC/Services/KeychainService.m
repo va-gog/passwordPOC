@@ -3,15 +3,6 @@
 
 @implementation KeychainService
 
-+ (instancetype)sharedInstance {
-    static KeychainService *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[KeychainService alloc] init];
-    });
-    return instance;
-}
-
 - (NSString *)serviceNameForUser:(NSString *)userId {
     return [NSString stringWithFormat:@"com.passwordpoc.%@", userId];
 }

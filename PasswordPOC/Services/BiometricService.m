@@ -3,15 +3,6 @@
 
 @implementation BiometricService
 
-+ (instancetype)sharedInstance {
-    static BiometricService *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[BiometricService alloc] init];
-    });
-    return instance;
-}
-
 - (void)authenticateWithReason:(NSString *)reason
                     completion:(void (^)(BOOL success, NSError * _Nullable error))completion {
     LAContext *context = [[LAContext alloc] init];

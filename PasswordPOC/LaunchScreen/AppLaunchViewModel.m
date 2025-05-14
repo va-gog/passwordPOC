@@ -3,19 +3,28 @@
 #import "KeychainService.h"
 #import "PasswordError.h"
 #import "PasswordScreenModelFactory.h"
+#import "PasswordError.h"
 
 @interface AppLaunchViewModel()
 
-@property (nonatomic, strong, readwrite) NSString *userId;
+@property (nonatomic, strong) NSString *userId;
 
 @end
 
 @implementation AppLaunchViewModel
 
+- (instancetype)initWithBackendService:(BackendService *)backendService  {
+    self = [super init];
+    if (self) {
+        _backendService = backendService;
+    }
+    return self;
+}
+
 - (void)initializeUserWithCompletion:(void (^)(BOOL success, NSError * _Nullable error))completion {
     NSString *userId = [[NSUUID UUID] UUIDString];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[BackendService sharedInstance] createUser:userId
+        [self.backendService createUser:userId
                                          completion:^(NSString * _Nullable userId,
                                                       NSError * _Nullable error) {
             if (!userId) {
@@ -43,7 +52,7 @@
 - (void)createPasswordScreenModelWithType:(PasswordType)type
                               completion:(void (^)(PasswordScreenModel * _Nullable model, NSError * _Nullable error))completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[BackendService sharedInstance] getUserData:self.userId
+        [self.backendService getUserData:self.userId
                                           completion:^(NSString * _Nullable userId,
                                                        BOOL hasFourDigitPassword,
                                                        BOOL hasSixDigitPassword,
