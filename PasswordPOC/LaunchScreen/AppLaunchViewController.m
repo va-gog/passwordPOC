@@ -1,5 +1,5 @@
 #import "AppLaunchViewController.h"
-#import "PasswordViewController.h"
+#import "PasscodeViewController.h"
 #import "PasswordScreenModel.h"
 #import "AppLaunchViewModel.h"
 #import "AlertManager.h"
@@ -9,6 +9,7 @@
 
 @property (nonatomic, strong) UIButton *fourDigitButton;
 @property (nonatomic, strong) UIButton *sixDigitButton;
+@property (nonatomic, strong) UIButton *iosStyleButton;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicator;
 @property (nonatomic, strong) AppLaunchViewModel *viewModel;
 
@@ -46,14 +47,14 @@
     [self.sixDigitButton addTarget:self action:@selector(sixDigitButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     self.sixDigitButton.hidden = YES;
     [self.view addSubview:self.sixDigitButton];
-    
+
     // Constraints
     [NSLayoutConstraint activateConstraints:@[
         [self.loadingIndicator.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
         [self.loadingIndicator.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
         
         [self.fourDigitButton.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-        [self.fourDigitButton.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:-30],
+        [self.fourDigitButton.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:-60],
         [self.fourDigitButton.widthAnchor constraintEqualToConstant:200],
         [self.fourDigitButton.heightAnchor constraintEqualToConstant:50],
         
@@ -79,6 +80,7 @@
             if (success) {
                 self.fourDigitButton.hidden = NO;
                 self.sixDigitButton.hidden = NO;
+                self.iosStyleButton.hidden = NO;
             } else if (error) {
                 [AlertManager showNotifyAlertWithTitle:[LocalizedStrings somethingWentWrong]
                                                message:error.localizedDescription
@@ -90,14 +92,19 @@
 }
 
 - (void)fourDigitButtonTapped {
-    [self presentPasswordViewControllerWithType:PasswordTypeFourDigit];
+    [self presentPasscodeViewControllerWithType:PasswordTypeFourDigit];
 }
 
 - (void)sixDigitButtonTapped {
-    [self presentPasswordViewControllerWithType:PasswordTypeSixDigit];
+    [self presentPasscodeViewControllerWithType:PasswordTypeSixDigit];
 }
 
-- (void)presentPasswordViewControllerWithType:(PasswordType)type {
+- (void)iosStyleButtonTapped {
+    // Just display a different title, but use the same controller
+    [self presentPasscodeViewControllerWithType:PasswordTypeFourDigit];
+}
+
+- (void)presentPasscodeViewControllerWithType:(PasswordType)type {
     [self.loadingIndicator startAnimating];
     
     __weak typeof(self) weakSelf = self;
@@ -114,30 +121,30 @@
                 return;
             }
             
-            PasswordViewController *passwordVC = [[PasswordViewController alloc] init];
-            passwordVC.viewModel = [[PasswordViewModel alloc] initWithScreenModel:model
+            PasscodeViewController *passcodeVC = [[PasscodeViewController alloc] init];
+            passcodeVC.viewModel = [[PasswordViewModel alloc] initWithScreenModel:model
                                                                    backendService: self.viewModel.backendService
                                                                   keychainService:[[KeychainService alloc] init]
                                                                  biometricService:[[BiometricService alloc] init]];
-            passwordVC.keychainEnalbled = YES;
-            passwordVC.modalPresentationStyle = UIModalPresentationFormSheet;
+            passcodeVC.keychainEnabled = YES;
+            passcodeVC.modalPresentationStyle = UIModalPresentationFormSheet;
             
-            __weak PasswordViewController *weakPasswordVC = passwordVC;
-            passwordVC.onPasswordValidated = ^(BOOL success,
+            __weak PasscodeViewController *weakPasscodeVC = passcodeVC;
+            passcodeVC.onPasscodeValidated = ^(BOOL success,
                                                NSError * _Nullable error) {
                 [self handlePasswordOperationResult:success
                                           withError:error
-                                     fromController:weakPasswordVC
+                                     fromController:weakPasscodeVC
                                      successMessage:[LocalizedStrings passwordValidated]];
             };
-            passwordVC.onPasswordSet = ^(BOOL success, NSError * _Nullable error) {
+            passcodeVC.onPasscodeSet = ^(BOOL success, NSError * _Nullable error) {
                 [self handlePasswordOperationResult:success
                                           withError:error
-                                     fromController:weakPasswordVC
+                                     fromController:weakPasscodeVC
                                      successMessage:[LocalizedStrings passwordSetSuccessfully]];
             };
             
-            [weakSelf presentViewController:passwordVC
+            [weakSelf presentViewController:passcodeVC
                                    animated:YES
                                  completion:nil];
         });
@@ -146,7 +153,7 @@
 
 - (void)handlePasswordOperationResult:(BOOL)success
                          withError:(NSError * _Nullable)error
-                   fromController:(PasswordViewController *)passwordVC
+                   fromController:(UIViewController *)passwordVC
                       successMessage:(NSString *)successMessage {
     if (success) {
         [passwordVC dismissViewControllerAnimated:YES completion:^{
