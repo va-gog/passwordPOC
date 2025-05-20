@@ -25,6 +25,14 @@
         _backendService = backendService;
         _keychainService = keychainService;
         _biometricService = biometricService;
+        
+        _enteredPasscode = [NSMutableString string];
+        
+        if (self.screenModel.isPasswordSet) {
+            self.entryState = PasscodeEntryStateValidation;
+        } else {
+            self.entryState = PasscodeEntryStateInitial;
+        }
     }
     return self;
 }

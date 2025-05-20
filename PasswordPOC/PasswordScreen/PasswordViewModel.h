@@ -7,9 +7,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, PasscodeEntryState) {
+    PasscodeEntryStateInitial,          // Initial entry state
+    PasscodeEntryStateConfirmation,     // Confirmation entry state (for new passcodes)
+    PasscodeEntryStateValidation        // Validation state (for existing passcodes)
+};
+
 @interface PasswordViewModel : NSObject
 
 @property (nonatomic, strong, readonly) PasswordScreenModel *screenModel;
+@property (nonatomic, strong) NSMutableString *enteredPasscode;
+@property (nonatomic, strong) NSString *initialPasscode;
+@property (nonatomic, assign) PasscodeEntryState entryState;
 
 - (instancetype)initWithScreenModel:(PasswordScreenModel *)screenModel
                      backendService:(id<BackendServiceProtocol>)backendService
