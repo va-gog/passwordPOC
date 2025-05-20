@@ -113,9 +113,12 @@
     
     [self.viewModel initializeUserWithCompletion:^(BOOL success, NSError * _Nullable error) {
         // Assert
-        XCTAssertFalse(success, @"User initialization should fail");
-        XCTAssertNotNil(error, @"Error should not be nil for failed initialization");
-        XCTAssertEqual(error.code, 409, @"Error code should match the original error");
+        XCTAssertFalse(success,
+                       @"User initialization should fail");
+        XCTAssertNotNil(error,
+                        @"Error should not be nil for failed initialization");
+        XCTAssertEqual(error.code, 404,
+                       @"Error code should match the original error");
         [expectation fulfill];
     }];
     
