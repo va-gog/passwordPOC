@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "PasscodePresentationModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -10,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface PasscodeKeypadView : UIView
 
 @property (nonatomic, weak) id<PasscodeKeypadViewDelegate> delegate;
+@property (nonatomic, strong) PasscodePresentationModel *presentationModel;
 
 - (void)updateForSize:(CGSize)size;
 

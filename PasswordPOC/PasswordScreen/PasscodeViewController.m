@@ -3,6 +3,7 @@
 #import "LocalizedStrings.h"
 #import "PasscodeDotsView.h"
 #import "PasscodeKeypadView.h"
+#import "PasscodePresentationModel.h"
 
 @interface PasscodeViewController () <UITraitChangeObservable> {
     id<UITraitChangeRegistration> _traitToken;
@@ -25,6 +26,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     [self setupUI];
     [self checkPasswordStatus];
     [self updateUIForCurrentState];
@@ -53,18 +55,15 @@
 }
 
 - (void)updateLayoutForSize:(CGSize)size {
-    BOOL isPortrait = size.height > size.width;
-    CGFloat topSpacing = isPortrait ? 60 : 20;
-    CGFloat dotsSpacing = isPortrait ? 20 : 10;
-    CGFloat keypadSpacing = isPortrait ? 60 : 30;
-    
-    [self.titleLabelTopConstraint setConstant:topSpacing];
-    [self.dotsContainerTopConstraint setConstant:dotsSpacing];
-    [self.keypadContainerTopConstraint setConstant:keypadSpacing];
+    [self.viewModel.screenModel.presentationModel updateForSize:size];
     
     [self.dotsView updateForSize:size];
     [self.keypadView updateForSize:size];
-    [self.view setNeedsLayout];
+    
+    [self.titleLabelTopConstraint setConstant:self.viewModel.screenModel.presentationModel.topSpacing];
+    [self.dotsContainerTopConstraint setConstant:self.viewModel.screenModel.presentationModel.dotsSpacing];
+    [self.keypadContainerTopConstraint setConstant:self.viewModel.screenModel.presentationModel.keypadSpacing];
+    
     [self.view layoutIfNeeded];
 }
 
@@ -130,34 +129,34 @@
 
 - (void)setupDots {
     self.dotsView = [[PasscodeDotsView alloc] init];
-    self.dotsView.digitsCount = self.viewModel.screenModel.digitsCount;
     self.dotsView.translatesAutoresizingMaskIntoConstraints = NO;
-
+    self.dotsView.presentationModel = self.viewModel.screenModel.presentationModel;
+    self.dotsView.digitsCount = self.viewModel.screenModel.presentationModel.digitsCount;
     [self.view addSubview:self.dotsView];
 }
-
 
 - (void)setupKeypad {
     self.keypadView = [[PasscodeKeypadView alloc] init];
     self.keypadView.delegate = self;
     self.keypadView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.keypadView.presentationModel = self.viewModel.screenModel.presentationModel;
     [self.view addSubview:self.keypadView];
 }
 
 - (void)updateUIForCurrentState {
     switch (self.viewModel.entryState) {
         case PasscodeEntryStateInitial:
-            self.titleLabel.text = [NSString stringWithFormat:@"Enter new %@-digit passcode", @(self.viewModel.screenModel.digitsCount)];
+            self.titleLabel.text = [NSString stringWithFormat:@"Enter new %@-digit passcode", @(self.viewModel.screenModel.presentationModel.digitsCount)];
             self.subtitleLabel.text = @"";
             break;
             
         case PasscodeEntryStateConfirmation:
-            self.titleLabel.text = [NSString stringWithFormat:@"Confirm your %@-digit passcode", @(self.viewModel.screenModel.digitsCount)];
+            self.titleLabel.text = [NSString stringWithFormat:@"Confirm your %@-digit passcode", @(self.viewModel.screenModel.presentationModel.digitsCount)];
             self.subtitleLabel.text = @"Enter the same passcode again to confirm";
             break;
             
         case PasscodeEntryStateValidation:
-            self.titleLabel.text = [NSString stringWithFormat:@"Enter your %@-digit passcode", @(self.viewModel.screenModel.digitsCount)];
+            self.titleLabel.text = [NSString stringWithFormat:@"Enter your %@-digit passcode", @(self.viewModel.screenModel.presentationModel.digitsCount)];
             self.subtitleLabel.text = @"";
             break;
     }
@@ -319,12 +318,12 @@
 #pragma mark - PasscodeKeypadViewDelegate
 
 - (void)keypadButtonTapped:(NSInteger)digit {
-    if (self.viewModel.enteredPasscode.length >= self.viewModel.screenModel.digitsCount) {
+    if (self.viewModel.enteredPasscode.length >= self.viewModel.screenModel.presentationModel.digitsCount) {
         return;
     }
     [self.viewModel.enteredPasscode appendString:[NSString stringWithFormat:@"%ld", (long)digit]];
     [self.dotsView updateDisplayForEnteredDigitsCount:self.viewModel.enteredPasscode.length];
-    if (self.viewModel.enteredPasscode.length == self.viewModel.screenModel.digitsCount) {
+    if (self.viewModel.enteredPasscode.length == self.viewModel.screenModel.presentationModel.digitsCount) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self processCompletedPasscodeEntry];
         });

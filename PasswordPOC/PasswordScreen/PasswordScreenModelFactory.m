@@ -1,5 +1,6 @@
 #import "PasswordScreenModelFactory.h"
 #import "LocalizedStrings.h"
+#import "PasscodePresentationModel.h"
 
 @implementation PasswordScreenModelFactory
 
@@ -35,11 +36,14 @@
             return nil;
     }
     
+    PasscodePresentationModel *presentationModel = [PasscodePresentationModel defaultModel];
+    presentationModel.digitsCount = digitsCount;
+    
     return [[PasswordScreenModel alloc] initWithUserID:userID
                                                  type:type
                                         isPasswordSet:hasPassword
                                             titleText:titleText
-                                          digitsCount:digitsCount];
+                                    presentationModel:presentationModel];
 }
 
 @end 

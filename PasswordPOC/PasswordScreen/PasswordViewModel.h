@@ -16,9 +16,9 @@ typedef NS_ENUM(NSInteger, PasscodeEntryState) {
 @interface PasswordViewModel : NSObject
 
 @property (nonatomic, strong, readonly) PasswordScreenModel *screenModel;
-@property (nonatomic, strong) NSMutableString *enteredPasscode;
-@property (nonatomic, strong) NSString *initialPasscode;
-@property (nonatomic, assign) PasscodeEntryState entryState;
+@property (nonatomic, strong, readwrite) NSMutableString *enteredPasscode;
+@property (nonatomic, strong, readwrite) NSString *initialPasscode;
+@property (nonatomic, assign, readwrite) PasscodeEntryState entryState;
 
 - (instancetype)initWithScreenModel:(PasswordScreenModel *)screenModel
                      backendService:(id<BackendServiceProtocol>)backendService

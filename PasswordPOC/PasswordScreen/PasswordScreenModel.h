@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "PasswordTypes.h"
+#import "PasscodePresentationModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -9,14 +10,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) PasswordType type;
 @property (nonatomic, assign, readonly) BOOL isPasswordSet;
 @property (nonatomic, assign, readonly) NSString *titleText;
-@property (nonatomic, assign, readonly) NSInteger digitsCount;
-
+@property (nonatomic, strong, readonly) PasscodePresentationModel *presentationModel;
 
 - (instancetype)initWithUserID:(NSString *)userID
                           type: (PasswordType)type
                  isPasswordSet:(BOOL)isPasswordSet
                      titleText:(NSString *)titleText
-                   digitsCount:(NSInteger)digitsCount;
+                presentationModel:(PasscodePresentationModel *)presentationModel;
 
 @end
 

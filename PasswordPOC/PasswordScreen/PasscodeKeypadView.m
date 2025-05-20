@@ -14,6 +14,7 @@
     if (self) {
         self.translatesAutoresizingMaskIntoConstraints = NO;
         self.keypadButtons = [NSMutableArray array];
+        self.presentationModel = [PasscodePresentationModel defaultModel];
         [self setupKeypad];
     }
     return self;
@@ -29,7 +30,7 @@
     self.deleteButton = [UIButton buttonWithType:UIButtonTypeSystem];
     self.deleteButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.deleteButton setImage:[UIImage systemImageNamed:@"delete.left"] forState:UIControlStateNormal];
-    self.deleteButton.tintColor = [UIColor labelColor];
+    self.deleteButton.tintColor = self.presentationModel.buttonTextColor;
     [self.deleteButton addTarget:self action:@selector(deleteButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:self.deleteButton];
     
@@ -41,11 +42,11 @@
     button.translatesAutoresizingMaskIntoConstraints = NO;
     button.tag = number;
     [button setTitle:[NSString stringWithFormat:@"%d", number] forState:UIControlStateNormal];
-    [button setTitleColor:[UIColor labelColor] forState:UIControlStateNormal];
-    button.titleLabel.font = [UIFont systemFontOfSize:28 weight:UIFontWeightRegular];
+    [button setTitleColor:self.presentationModel.buttonTextColor forState:UIControlStateNormal];
+    button.titleLabel.font = self.presentationModel.buttonFont;
     
     button.layer.borderWidth = 1;
-    button.layer.borderColor = [UIColor systemGrayColor].CGColor;
+    button.layer.borderColor = self.presentationModel.buttonBorderColor.CGColor;
     
     [button addTarget:self action:@selector(keypadButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:button];
@@ -53,9 +54,7 @@
 }
 
 - (void)updateForSize:(CGSize)size {
-    BOOL isPortrait = size.height > size.width;
-    CGFloat buttonSpacing = isPortrait ? 20 : 10;
-    CGFloat buttonSize = isPortrait ? 80 : 40;
+    [self.presentationModel updateForSize:size];
     
     [self removeConstraints:self.constraints];
     
@@ -63,37 +62,37 @@
         for (int col = 0; col < 3; col++) {
             int index = row * 3 + col;
             UIButton *button = self.keypadButtons[index];
-            button.layer.cornerRadius = buttonSize / 2;
+            button.layer.cornerRadius = self.presentationModel.buttonCornerRadius;
             [button removeConstraints:button.constraints];
 
             [NSLayoutConstraint activateConstraints:@[
-                [button.widthAnchor constraintEqualToConstant:buttonSize],
-                [button.heightAnchor constraintEqualToConstant:buttonSize],
-                [button.topAnchor constraintEqualToAnchor:self.topAnchor constant:row * (buttonSize + buttonSpacing)],
-                [button.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:col * (buttonSize + buttonSpacing)]
+                [button.widthAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
+                [button.heightAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
+                [button.topAnchor constraintEqualToAnchor:self.topAnchor constant:row * (self.presentationModel.buttonSize + self.presentationModel.buttonSpacing)],
+                [button.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:col * (self.presentationModel.buttonSize + self.presentationModel.buttonSpacing)]
             ]];
         }
     }
     
     UIButton *zeroButton = self.keypadButtons[9];
-    zeroButton.layer.cornerRadius = buttonSize / 2;
+    zeroButton.layer.cornerRadius = self.presentationModel.buttonCornerRadius;
     
     [self.deleteButton removeConstraints:self.deleteButton.constraints];
     [zeroButton removeConstraints:zeroButton.constraints];
 
     [NSLayoutConstraint activateConstraints:@[
         [self.deleteButton.centerYAnchor constraintEqualToAnchor:zeroButton.centerYAnchor],
-        [self.deleteButton.leadingAnchor constraintEqualToAnchor:zeroButton.trailingAnchor constant:buttonSpacing],
-        [self.deleteButton.widthAnchor constraintEqualToConstant:buttonSize],
-        [self.deleteButton.heightAnchor constraintEqualToConstant:buttonSize],
+        [self.deleteButton.leadingAnchor constraintEqualToAnchor:zeroButton.trailingAnchor constant:self.presentationModel.buttonSpacing],
+        [self.deleteButton.widthAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
+        [self.deleteButton.heightAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
         
-        [zeroButton.topAnchor constraintEqualToAnchor:self.topAnchor constant:3 * (buttonSize + buttonSpacing)],
+        [zeroButton.topAnchor constraintEqualToAnchor:self.topAnchor constant:3 * (self.presentationModel.buttonSize + self.presentationModel.buttonSpacing)],
         [zeroButton.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-        [zeroButton.widthAnchor constraintEqualToConstant:buttonSize],
-        [zeroButton.heightAnchor constraintEqualToConstant:buttonSize],
+        [zeroButton.widthAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
+        [zeroButton.heightAnchor constraintEqualToConstant:self.presentationModel.buttonSize],
         
-        [self.widthAnchor constraintEqualToConstant:3 * buttonSize + 2 * buttonSpacing],
-        [self.heightAnchor constraintEqualToConstant:4 * buttonSize + 3 * buttonSpacing]
+        [self.widthAnchor constraintEqualToConstant:3 * self.presentationModel.buttonSize + 2 * self.presentationModel.buttonSpacing],
+        [self.heightAnchor constraintEqualToConstant:4 * self.presentationModel.buttonSize + 3 * self.presentationModel.buttonSpacing]
     ]];
 }
 

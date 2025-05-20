@@ -10,6 +10,7 @@
 #import "MockBackendService.h"
 #import "PasswordError.h"
 #import "PasswordScreenModel.h"
+#import "PasscodePresentationModel.h"
 
 @interface AppLaunchViewModelTests : XCTestCase
 
@@ -159,7 +160,8 @@
         XCTAssertNil(error, @"Error should be nil for successful model creation");
         XCTAssertEqual(model.type, PasswordTypeFourDigit, @"Model should have correct type");
         XCTAssertEqual(model.isPasswordSet, YES, @"Model should indicate password is set");
-        XCTAssertEqual(model.digitsCount, 4, @"Model should have 4 digits");
+        XCTAssertNotNil(model.presentationModel, @"Model should have a presentation model");
+        XCTAssertEqual(model.presentationModel.digitsCount, 4, @"Presentation model should have correct digits count");
         [modelExpectation fulfill];
     }];
     
@@ -234,7 +236,8 @@
         XCTAssertNotNil(model, @"Model should be created successfully");
         XCTAssertEqual(model.type, PasswordTypeSixDigit, @"Model should have correct type");
         XCTAssertEqual(model.isPasswordSet, YES, @"Model should indicate password is set");
-        XCTAssertEqual(model.digitsCount, 6, @"Model should have 6 digits");
+        XCTAssertNotNil(model.presentationModel, @"Model should have a presentation model");
+        XCTAssertEqual(model.presentationModel.digitsCount, 6, @"Presentation model should have correct digits count");
         [modelExpectation fulfill];
     }];
     

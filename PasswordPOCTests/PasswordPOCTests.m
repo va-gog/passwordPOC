@@ -13,6 +13,7 @@
 #import "MockBackendService.h"
 #import "MockKeychainService.h"
 #import "MockBiometricService.h"
+#import "PasscodePresentationModel.h"
 
 @interface PasswordViewModelTests : XCTestCase
 
@@ -31,12 +32,16 @@
 - (void)setUp {
     [super setUp];
     
+    // Create presentation model
+    PasscodePresentationModel *presentationModel = [PasscodePresentationModel defaultModel];
+    presentationModel.digitsCount = 4;
+    
     // Create screen model
     self.screenModel = [[PasswordScreenModel alloc] initWithUserID:@"test_user_id"
-                                                              type:PasswordTypeFourDigit
-                                                     isPasswordSet:YES
-                                                         titleText:@"Test Title"
-                                                       digitsCount:4];
+                                                             type:PasswordTypeFourDigit
+                                                    isPasswordSet:YES
+                                                        titleText:@"Test Title"
+                                                presentationModel:presentationModel];
     
     // Create mock services
     self.mockBackendService = [[MockBackendService alloc] init];

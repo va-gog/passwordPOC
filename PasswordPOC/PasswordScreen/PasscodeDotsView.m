@@ -13,6 +13,7 @@
     if (self) {
         self.dotViews = [NSMutableArray array];
         self.translatesAutoresizingMaskIntoConstraints = NO;
+        self.presentationModel = [PasscodePresentationModel defaultModel];
     }
     return self;
 }
@@ -29,8 +30,8 @@
     for (int i = 0; i < self.digitsCount; i++) {
         UIView *dotView = [[UIView alloc] init];
         dotView.translatesAutoresizingMaskIntoConstraints = NO;
-        dotView.backgroundColor = [UIColor systemGrayColor];
-        dotView.alpha = 0.3;
+        dotView.backgroundColor = self.presentationModel.dotInactiveColor;
+        dotView.alpha = self.presentationModel.dotInactiveAlpha;
         [self addSubview:dotView];
         [self.dotViews addObject:dotView];
     }
@@ -39,27 +40,25 @@
 }
 
 - (void)updateForSize:(CGSize)size {
-    BOOL isPortrait = size.height > size.width;
-    CGFloat dotSpacing = isPortrait ? 20 : 10;
-    CGFloat dotSize = isPortrait ? 20 : 10;
+    [self.presentationModel updateForSize:size];
     
     [self removeConstraints:self.constraints];
     
     [NSLayoutConstraint activateConstraints:@[
-        [self.widthAnchor constraintEqualToConstant:self.digitsCount * dotSize + (self.digitsCount - 1) * dotSpacing],
-        [self.heightAnchor constraintEqualToConstant:dotSize]
+        [self.widthAnchor constraintEqualToConstant:self.digitsCount * self.presentationModel.dotSize + (self.digitsCount - 1) * self.presentationModel.dotSpacing],
+        [self.heightAnchor constraintEqualToConstant:self.presentationModel.dotSize]
     ]];
     
     for (int i = 0; i < self.digitsCount; i++) {
         UIView *dotView = self.dotViews[i];
-        dotView.layer.cornerRadius = dotSize / 2;
+        dotView.layer.cornerRadius = self.presentationModel.dotSize / 2;
         [dotView removeConstraints:dotView.constraints];
         [NSLayoutConstraint activateConstraints:@[
-            [dotView.widthAnchor constraintEqualToConstant:dotSize],
-            [dotView.heightAnchor constraintEqualToConstant:dotSize],
+            [dotView.widthAnchor constraintEqualToConstant:self.presentationModel.dotSize],
+            [dotView.heightAnchor constraintEqualToConstant:self.presentationModel.dotSize],
             [dotView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
             [dotView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                                  constant:i * dotSpacing + i * dotSize]
+                                                  constant:i * self.presentationModel.dotSpacing + i * self.presentationModel.dotSize]
         ]];
     }
 }
@@ -69,10 +68,10 @@
         UIView *dotView = self.dotViews[i];
         if (i < enteredDigitsCount) {
             dotView.alpha = 1.0;
-            dotView.backgroundColor = [UIColor systemBlueColor];
+            dotView.backgroundColor = self.presentationModel.dotActiveColor;
         } else {
-            dotView.alpha = 0.3;
-            dotView.backgroundColor = [UIColor systemGrayColor];
+            dotView.alpha = self.presentationModel.dotInactiveAlpha;
+            dotView.backgroundColor = self.presentationModel.dotInactiveColor;
         }
     }
 }
