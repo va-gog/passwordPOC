@@ -1,3 +1,10 @@
+//
+//  PasscodeViewController.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import "PasscodeViewController.h"
 #import "AlertManager.h"
 #import "LocalizedStrings.h"

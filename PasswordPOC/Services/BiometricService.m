@@ -1,3 +1,9 @@
+//
+//  BiometricService.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 14.05.25.
+//
 #import "BiometricService.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 

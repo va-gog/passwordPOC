@@ -1,3 +1,10 @@
+//
+//  AppLaunchViewController.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import "AppLaunchViewController.h"
 #import "PasscodeViewController.h"
 #import "PasswordScreenModel.h"

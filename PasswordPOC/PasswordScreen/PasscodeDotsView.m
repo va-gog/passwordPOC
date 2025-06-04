@@ -1,3 +1,10 @@
+//
+//  PasscodeDotsView.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import "PasscodeDotsView.h"
 
 @interface PasscodeDotsView () 

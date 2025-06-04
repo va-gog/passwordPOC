@@ -1,3 +1,10 @@
+//
+//  PasscodePresentationModel.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import "PasscodePresentationModel.h"
 
 @interface PasscodePresentationModel()

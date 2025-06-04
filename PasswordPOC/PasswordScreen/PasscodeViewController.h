@@ -1,3 +1,10 @@
+//
+//  PasscodeViewController.h
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import <UIKit/UIKit.h>
 #import "PasswordTypes.h"
 #import "PasswordViewModel.h"

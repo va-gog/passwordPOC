@@ -1,3 +1,10 @@
+//
+//  BiometricService.h
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 14.05.25.
+//
+
 #import <Foundation/Foundation.h>
 #import "BiometricServiceProtocol.h"
 

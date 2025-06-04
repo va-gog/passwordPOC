@@ -1,3 +1,10 @@
+//
+//  PasswordScreenModelFactory.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import "PasswordScreenModelFactory.h"
 #import "LocalizedStrings.h"
 #import "PasscodePresentationModel.h"

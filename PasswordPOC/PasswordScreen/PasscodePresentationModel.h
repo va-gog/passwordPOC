@@ -1,3 +1,10 @@
+//
+//  PasscodePresentationModel.h
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 04.06.25.
+//
+
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 

@@ -1,4 +1,24 @@
+//
+//  BackendService.m
+//  PasswordPOC
+//
+//  Created by Gohar Vardanyan on 14.05.25.
+//
+
 #import "BackendService.h"
+#import "AESCryptoHelper.h"
+
+static NSData *DemoAESKey(void) {
+    static uint8_t keyBytes[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                                   0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+    return [NSData dataWithBytes:keyBytes length:16];
+}
+
+static NSData *DemoAESIV(void) {
+    static uint8_t ivBytes[16] = {0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08,
+                                  0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00};
+    return [NSData dataWithBytes:ivBytes length:16];
+}
 
 @interface UserPasswordData : NSObject
 @property (nonatomic, strong) NSString *userId;
@@ -88,11 +108,17 @@
                 return;
             }
             
+            NSData *key = DemoAESKey();
+            NSData *iv = DemoAESIV();
+            NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
+            NSData *encryptedPassword = [AESCryptoHelper encryptData:passwordData key:key iv:iv];
+            NSString *base64Password = [encryptedPassword base64EncodedStringWithOptions:0];
+            
             if (type == PasswordTypeFourDigit) {
-                userData.fourDigitPassword = password;
+                userData.fourDigitPassword = base64Password;
                 userData.hasSetFourDigitPassword = YES;
             } else if (type == PasswordTypeSixDigit) {
-                userData.sixDigitPassword = password;
+                userData.sixDigitPassword = base64Password;
                 userData.hasSetSixDigitPassword = YES;
             }
             
@@ -112,13 +138,20 @@
         return;
     }
     
-    if (type == PasswordTypeFourDigit && ![password isEqualToString:userData.fourDigitPassword]) {
+    NSData *key = DemoAESKey();
+    NSData *iv = DemoAESIV();
+    NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *encryptedPassword = [AESCryptoHelper encryptData:passwordData key:key iv:iv];
+    NSString *base64Password = [encryptedPassword base64EncodedStringWithOptions:0];
+
+    
+    if (type == PasswordTypeFourDigit && ![base64Password isEqualToString:userData.fourDigitPassword]) {
         NSError *error = [NSError errorWithDomain:@"ValidationError" code:400 userInfo:@{NSLocalizedDescriptionKey: @"4-digit password is not Correct"}];
         completion(NO, error);
         return;
     }
     
-    if (type == PasswordTypeSixDigit && ![password isEqualToString:userData.sixDigitPassword]) {
+    if (type == PasswordTypeSixDigit && ![base64Password isEqualToString:userData.sixDigitPassword]) {
         NSError *error = [NSError errorWithDomain:@"ValidationError" code:400 userInfo:@{NSLocalizedDescriptionKey: @"6-digit password is not correct set"}];
         completion(NO, error);
         return;
